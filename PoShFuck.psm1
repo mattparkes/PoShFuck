@@ -72,7 +72,30 @@ Function FuckFix ($cmd, $error) {
 
 }
 
-export-modulemember *-*
+
+
+
+
+
+Function Get-FuckingHelp {
+<#
+	.SYNOPSIS
+	Googles your last error message.
+	.DESCRIPTION
+	Googles your last error message.
+	.EXAMPLE
+	Get-FuckingHelp
+#>
+	#ToDo: Add Null checks, etc
+	
+    start ("http://www.google.com/?q=PowerShell " + ($Error[0].ToString() -split [regex]::Escape([environment]::newline)))
+}
+
+
+
+Export-ModuleMember *-*
 
 Set-Alias -Scope global -Name "Fuck" -Value "Invoke-TheFuck"
 Set-Alias -Scope global -Name "Fuck!" -Value "Invoke-TheFuck -Force"
+
+Set-Alias -Scope global -Name "WTF" -Value "Get-FuckingHelp"
