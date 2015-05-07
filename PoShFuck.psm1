@@ -243,8 +243,6 @@ param
 
 function fuck! { Invoke-TheFuck -Force }
 
-Export-ModuleMember *-*
-Export-ModuleMember fuck!
-
-Set-Alias -Scope global -Name "Fuck" -Value "Invoke-TheFuck"
-Set-Alias -Scope global -Name "WTF" -Value "Get-FuckingHelp"
+Export-ModuleMember "fuck!"
+Export-ModuleMember "Invoke-TheFuck" -Alias Fuck
+Export-ModuleMember "Get-FuckingHelp" -Alias WTF
