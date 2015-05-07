@@ -3,11 +3,9 @@ PowerShell implementation of "The Fuck" (https://github.com/nvbn/thefuck)
 
 #Installation
 
-We could point you at a script, but you've probably got a restricted execution policy. So run this instead:
+For PoShFuck to run, your execution policy must be lowered. So run this in an admin elevated PowerShell to install:
 
-	$dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck); md $dst -ea silentlycontinue; $pfk = "$env:temp\poshfuck.zip"
-	Invoke-WebRequest 'https://github.com/mattparkes/PoShFuck/archive/master.zip' -OutFile $pfk
-	$shell = New-Object -ComObject Shell.Application; $shell.Namespace($dst).copyhere(($shell.NameSpace($pfk)).items(),20); Remove-Item $pfk -Force
-	Move-Item "$dst\PoShFuck-master\*" "$dst" -Force; Remove-Item "$dst\PoShFuck-master" -Recurse -Force
+	Set-ExecutionPolicy remoteSigned
+	iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/mattparkes/PoShFuck/master/Install-TheFucker.ps1'))
 
 Then restart PowerShell.
