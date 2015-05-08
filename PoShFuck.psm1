@@ -82,6 +82,7 @@ param
 	[string]$splitcmd,
 	[string]$preverror
 )
+	$newcommand = $lastcommand
 
 	#Bunch of stand-alone IF blocks (not a switch) so it can hit multiple conditions and be corrected multiple times
 	
@@ -94,8 +95,13 @@ param
 	if ( $preverror -match 'is not recognized as the name of a cmdlet, function' ) {
 		$icf = IsCommandFucked -Command $splitcmd
 			if ( $icf -ne $false ) { 
-				$newcommand = $lastcommand -replace $splitcmd, $icf
+				$newcommand = $newcommand -replace $splitcmd, $icf
 			}
+	}
+	
+	#Fix PING -a (-a param must be BEFORE the Host/IP or it is ignored, so move it before the Host/IP if it's not)
+	if ($newcommand -Match "^(ping)( .*)( -a)(.*)") {
+		$newcommand = $Matches[1].ToString() + $Matches[3].ToString() + $Matches[4].ToString() + $Matches[2].ToString()
 	}
 
     return $newcommand
