@@ -103,6 +103,15 @@ param
 	if ($newcommand -Match "^(ping)( .*)( -a)(.*)") {
 		$newcommand = $Matches[1].ToString() + $Matches[3].ToString() + $Matches[4].ToString() + $Matches[2].ToString()
 	}
+	
+	#IFCONFIG aint a Windows command (BUT IT SHOULD BE!)
+	if ($newcommand -eq "ifconfig") {
+		$newcommand = "ipconfig /all"
+	}
+	
+	if ($newcommand -Match "^(ifconfig | grep addr)") {
+		$newcommand = 'ipconfig | find "Address"'
+	}
 
     return $newcommand
 
