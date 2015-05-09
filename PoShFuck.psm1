@@ -15,34 +15,43 @@ param
 	[switch]$Force
 )
 
-	## GATHER THE LAST ERROR NOW BEFORE WE GENERATE MORE - IF WE DO, REMOVE THEM, LIKE $aliasres
+	## GATHER THE LAST ERROR NOW BEFORE WE GENERATE MORE - IF WE DO, -EA IGNORE THE COMMAND OR REMOVE THEM ($global:error.Remove($global:error[0]))
 	$preverror = $global:Error[0]
+	
 	
 	## GATHER THE LAST COMMAND, BUT NOT IF IT IS ITSELF
 	$cmditeration = 1
 	do {
-		$lastcommand = (Get-History -Count $cmditeration)[0]
+	
+		try {
+			$lastcommand = (Get-History -Count $cmditeration -ea SilentlyContinue)[0]
+		} catch {
+			throw "Cannot fuck without a previous command"
+		}
+		
 		$splitcmd = $lastcommand.CommandLine.Split(' ')[0]
 		Write-Verbose "
 			Testing executed command: $lastcommand
-			Testing resolved command: $($(get-alias $splitcmd -ea SilentlyContinue).ResolvedCommand.Name)"
+			Testing resolved command: $($(get-alias $splitcmd -ea ignore).ResolvedCommand.Name)"
 		$cmditeration++
 		
-		if ( ($aliasres = (get-alias $splitcmd -ea ignore).ResolvedCommand.Name) -eq $null ) { $global:error.Remove($global:error[0]) }
+		$aliasres = (get-alias $splitcmd -ea ignore).ResolvedCommand.Name
+		
 	} until (
-		( ($lastcommand.CommandLine -notmatch "Invoke-TheFuck") -and ($aliasres -notmatch "Invoke-TheFuck") ) -or ($lastcommand -eq $null)
+		( ($lastcommand.CommandLine -notmatch "Invoke-TheFuck") -and ($aliasres -notmatch "Invoke-TheFuck") -and ($lastcommand.CommandLine -notmatch "fuck!") ) -or ($lastcommand.id -eq 1)
 	)
 	
-	## TODO: TEST THIS
-	if ($lastcommand -eq $null) { throw "Cannot fuck without a previous command" }
+	## THE LOOP STOPS AT THE FIRST COMMAND TO PREVENT AN INFINITE LOOP  - IF THAT -EQ FUCK THEN BREAK
+	if ( ($lastcommand.CommandLine -match "Invoke-TheFuck") -or ($aliasres -match "Invoke-TheFuck") -or ($lastcommand.CommandLine -match "fuck!") ) { throw "No valid commands found" }
 	
 	Write-Verbose "Fucking command: $lastcommand"
 	
 	$newcommand = FuckFix -lastcommand $lastcommand.CommandLine -splitcmd $splitcmd -preverror $preverror
 	
-	if ($Force) { Invoke-Expression "$newcommand"; }
-	else
-	{
+	if ($Force) {
+		Write-Host "Executing: $newcommand"
+		Invoke-Expression "$newcommand"
+	} else {
 		$title = "Did you mean?"
 		$message = " $newcommand"
 		$yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes",'Execute'
@@ -102,11 +111,6 @@ param
 	#Fix PING -a (-a param must be BEFORE the Host/IP or it is ignored, so move it before the Host/IP if it's not)
 	if ($newcommand -Match "^(ping)( .*)( -a)(.*)") {
 		$newcommand = $Matches[1].ToString() + $Matches[3].ToString() + $Matches[4].ToString() + $Matches[2].ToString()
-	}
-	
-	#IFCONFIG aint a Windows command (BUT IT SHOULD BE!)
-	if ($newcommand -eq "ifconfig") {
-		$newcommand = "ipconfig /all"
 	}
 	
 	if ($newcommand -Match "^(ifconfig | grep addr)") {
@@ -174,32 +178,57 @@ param
 			Write-Verbose "Adding - $cmd"
 		} elseif ( $cmdscore -gt $topcmd ) {
 			$topcmd = $cmdscore
-			$cmdmatch = @($cmd)
+			$cmdmatch = @( $cmd )
 			Write-Verbose "New top score - $topcmd - $cmd"
 		} else {
-			#DEBUG Write-Verbose "Discarding - $cmd"
+			#Write-Verbose "Discarding - $cmd"
 		}
 	}
 	
-	## NOW WE HAVE CANDIDATES, IF ONE IS THE SAME LENGTH, CHOOSE IT
+	### NOW WE HAVE CANDIDATES
+	## IF THERE IS ONLY ONE, TAKE IT!
 	
-	foreach ( $cmd in $cmdmatch ) {
-		if ( $cmd.Length -eq $Command.Length ) {
-			$result = $cmd
-			Write-Verbose "Result set by length - $cmd"
-		}
-	}
-	
-	## OTHERWISE, JUST RETURN THE FIRST??
-	
-	if ( $result ) {
-		return $result
-	} else {
-		Write-Verbose "Returning the first match array element"
+	if ($cmdmatch.count -eq 1) {
+		Write-Verbose "Choosing last remaining candidate"
 		return $cmdmatch[0]
 	}
 	
-	return $result
+	## TRY CHOOSING ONE WITH SIMILARITIES
+	
+	foreach ( $cmd in $cmdmatch ) {
+		if ( $Command[0] -eq $cmd[0] ) {
+			Write-Verbose "First letter match - $cmd"
+			$lettermatch += @( $cmd )
+		} elseif ( ($Command[-1] -eq $cmd[-1]) -and ( $Command[-2] -eq $cmd[-2] ) ) {
+			Write-Verbose "Last letter match - $cmd"
+			$lettermatch += @( $cmd )
+		}
+	}
+		
+	if ( $lettermatch -ne $null ) { $cmdmatch = $lettermatch }
+
+	## IF THERE IS ONLY ONE, TAKE IT!
+	
+	if ($cmdmatch.count -eq 1) {
+		Write-Verbose "Choosing last remaining candidate"
+		return $cmdmatch[0]
+	}
+	
+	## TRY CHOOSING ONE THE SAME LENGTH
+	
+	foreach ( $cmd in $cmdmatch ) {
+		if ( $cmd.Length -eq $Command.Length ) {
+			Write-Verbose "Length match - $cmd"
+			$lengthrmatch += @( $cmd )
+		}
+	}
+	
+	if ( $lengthrmatch -ne $null ) { $cmdmatch = $lengthrmatch }
+
+	## THEN, JUST RETURN THE FIRST??
+	
+	Write-Verbose "Returning the first match array element"
+	return $cmdmatch[0]
 }
 
 function CommandAnagramExtApp {
@@ -256,7 +285,11 @@ param
 	}
 }
 
-function fuck! { Invoke-TheFuck -Force }
+function fuck! {
+[CmdletBinding()]
+param()
+	Invoke-TheFuck -Force
+}
 
 Export-ModuleMember *-*
 Export-ModuleMember fuck!
