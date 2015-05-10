@@ -70,8 +70,13 @@ param
 	## EXECUTE IF CHOSEN AT PROMPT
 	
 	if ( ($answer -eq 0) -or $Force ) {
-		$staticdict.Set_Item($splitcmd,$newcommand.Split(' ')[0])
-		$staticdict | Export-Clixml $dictloc
+	
+		## DONT WRITE THE EXEC NAME UNLESS IT WAS WRONG
+		if ( $splitcmd -ne $newcommand.Split(' ')[0] ) {
+			$staticdict.Set_Item($splitcmd,$newcommand.Split(' ')[0])
+			$staticdict | Export-Clixml $dictloc
+		}
+
 		Invoke-Expression "$newcommand"
 	}
 	
@@ -296,7 +301,7 @@ param
 	[string]$Command
 )
 
-	$rawlist = Get-Command -CommandType Cmdlet | Select-Object Name
+	$rawlist = Get-Command -CommandType 'Cmdlet,Function' | Select-Object Name
 	
 	if ( $rawlist.Name -contains $Command ) { Write-Verbose "Command is correct"; return $Command }
 	
