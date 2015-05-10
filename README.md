@@ -45,16 +45,16 @@ PoShFuck can fix it.
 
 fuck (alias to Invoke-TheFuck)
 
-This is the command which mungs your last command and presents you with options to fix it.
+- This is the command which mungs your last command and presents you with options to fix it.
 
 fuck! (alias to Invoke-TheFuck -Force)
 
-This command will execute the recommended option without prompting the user.
+- This command will execute the recommended option without prompting the user.
 
 WTF (alias to Get-FuckingHelp)
 
-Googles your console last error.
+- Googles your last console error.
 
 Get-Fucked
 
-Prints the list of commands which you have used PoShFuck to correct previously.
+- Prints the list of commands which you have used PoShFuck to correct previously.

@@ -91,9 +91,24 @@ Function Get-FuckingHelp {
 	.EXAMPLE
 	Get-FuckingHelp
 #>
-	#ToDo: Add Null checks, etc...doesnt execute the search in chrome
-	
-    Start-Process ("http://www.google.com/?q=PowerShell " + ($global:Error[0].ToString() -split [regex]::Escape([environment]::newline))  )
+	try {
+		$preverr = ($global:Error[0].ToString() -split [regex]::Escape([environment]::newline))
+		Start-Process "http://www.google.com/search?q=PowerShell $preverr"
+	} catch {
+		throw "WTF are you doing? Cannot Get-FuckingHelp without a previous error."
+	}
+}
+
+function fuck! {
+[CmdletBinding()]
+param()
+	Invoke-TheFuck -Force
+}
+
+function Get-Fucked {
+[CmdletBinding()]
+param()
+	Import-Clixml ( Join-Path (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck) StaticDict.xml )
 }
 
 ##############################################
@@ -315,18 +330,6 @@ param
 		$useverb = GetFuckingCandidates -Command $Command.Split('-')[0] -Candidates $verblist
 		return "$useverb-$($Command.Split('-')[1])"
 	}
-}
-
-function fuck! {
-[CmdletBinding()]
-param()
-	Invoke-TheFuck -Force
-}
-
-function Get-Fucked {
-[CmdletBinding()]
-param()
-Import-Clixml ( Join-Path (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck) StaticDict.xml )
 }
 
 Export-ModuleMember *-*
