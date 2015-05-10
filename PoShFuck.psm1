@@ -18,7 +18,6 @@ param
 	## GATHER THE LAST ERROR NOW BEFORE WE GENERATE MORE - IF WE DO, -EA IGNORE THE COMMAND OR REMOVE THEM ($global:error.Remove($global:error[0]))
 	$preverror = $global:Error[0]
 	
-	
 	## GATHER THE LAST COMMAND, BUT NOT IF IT IS ITSELF
 	$cmditeration = 1
 	do {
@@ -46,22 +45,36 @@ param
 	
 	Write-Verbose "Fucking command: $lastcommand"
 	
-	$newcommand = FuckFix -lastcommand $lastcommand.CommandLine -splitcmd $splitcmd -preverror $preverror
-	
-	if ($Force) {
-		Write-Host "Executing: $newcommand"
-		Invoke-Expression "$newcommand"
+	## GET THE STATIC DICTIONARY
+	$dictloc = ( Join-Path (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck) StaticDict.xml )
+	if ( Test-Path $dictloc ) {
+		Write-Verbose "Loading static dictionary"
+		$staticdict = Import-Clixml $dictloc
 	} else {
+		$staticdict = @{}
+	}
+	
+	$newcommand = FuckFix -lastcommand $lastcommand.CommandLine -splitcmd $splitcmd -preverror $preverror -staticdict $staticdict
+	
+	## CHOOSE WHETHER TO EXECUTE THE FIXED COMMAND
+	
+	if (!($Force)) {
 		$title = "Did you mean?"
 		$message = " $newcommand"
 		$yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes",'Execute'
 		$no = New-Object System.Management.Automation.Host.ChoiceDescription "&No",'Exit'
 		$options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
 		$answer = $host.ui.PromptForChoice($title, $message, $options, 0)
-	
-		if ($answer -eq 0) { Invoke-Expression "$newcommand"; }
 	}
-
+	
+	## EXECUTE IF CHOSEN AT PROMPT
+	
+	if ( ($answer -eq 0) -or $Force ) {
+		$staticdict.Set_Item($splitcmd,$newcommand.Split(' ')[0])
+		$staticdict | Export-Clixml $dictloc
+		Invoke-Expression "$newcommand"
+	}
+	
 }
 
 Function Get-FuckingHelp {
@@ -89,7 +102,8 @@ param
 (
 	[string]$lastcommand,
 	[string]$splitcmd,
-	[string]$preverror
+	[string]$preverror,
+	[hashtable]$staticdict
 )
 	$newcommand = $lastcommand
 
@@ -100,6 +114,13 @@ param
     #{ 
     #    $newcommand = $lastcommand -replace "foo", "bar"
     #}
+	
+	## CHECK THE STATIC DICTIONARY - IF IT HITS RETURN IMMEDIATELY
+	$prevmatch = $staticdict.Get_Item($lastcommand)
+	if ( $prevmatch ) {
+		Write-Verbose "Returning dictionary result"
+		return $prevmatch
+	}
 	
 	if ( $preverror -match 'is not recognized as the name of a cmdlet, function' ) {
 		$icf = IsCommandFucked -Command $splitcmd
@@ -116,7 +137,8 @@ param
 	if ($newcommand -Match "^(ifconfig | grep addr)") {
 		$newcommand = 'ipconfig | find "Address"'
 	}
-
+	
+	## RETURN AN ARRAY FOR THE USER ITERATE OVER
     return $newcommand
 
 }
@@ -194,18 +216,29 @@ param
 	}
 	
 	## TRY CHOOSING ONE WITH SIMILARITIES
+		## CHOOSE A CANDIDATE WITH THE SAME FIRST CHAR
+			## IF THAT CANDIDATE HAS THE SAME LAST TWO CHARS ADD IT TO TOPMATCH
+			## ELSE PUT IT AT THE TOP OF THE ARRAY - THE FIRST CHAR IS MORE OFTEN CORRECT
+		## ELSE CHOOSE A CANDIDATE WITH THE SAME LAST TWO CHARS
 	
 	foreach ( $cmd in $cmdmatch ) {
 		if ( $Command[0] -eq $cmd[0] ) {
-			Write-Verbose "First letter match - $cmd"
-			$lettermatch += @( $cmd )
+			if ( ($Command[-1] -eq $cmd[-1]) -and ( $Command[-2] -eq $cmd[-2] ) ) {
+				Write-Verbose "First and last char match - $cmd"
+				$topmatch += @( $cmd )
+			} else {
+				Write-Verbose "First char match - $cmd"
+				$lettermatch = ,$cmd + $lettermatch
+			}			
 		} elseif ( ($Command[-1] -eq $cmd[-1]) -and ( $Command[-2] -eq $cmd[-2] ) ) {
-			Write-Verbose "Last letter match - $cmd"
+			Write-Verbose "Last 2 chars match - $cmd"
 			$lettermatch += @( $cmd )
 		}
 	}
-		
-	if ( $lettermatch -ne $null ) { $cmdmatch = $lettermatch }
+
+	## IF THE LOOP RETURNED ANY MATCHES RESET THE ARRAY WITH TOPMATCH AT FIRST
+	
+	if ( ( $lettermatch -ne $null ) -or ( $topmatch -ne $null ) ) { $cmdmatch = $topmatch + $lettermatch }
 
 	## IF THERE IS ONLY ONE, TAKE IT!
 	
@@ -225,7 +258,7 @@ param
 	
 	if ( $lengthrmatch -ne $null ) { $cmdmatch = $lengthrmatch }
 
-	## THEN, JUST RETURN THE FIRST??
+	## THEN, JUST RETURN THE FIRST?? --TODO RETURN THE WHOLE ARRAY
 	
 	Write-Verbose "Returning the first match array element"
 	return $cmdmatch[0]
@@ -271,8 +304,8 @@ param
 		$verblist += @( $cmd.Name.Split('-')[0]	)
 		$nounlist += @( $cmd.Name.Split('-')[1]	)
 	}
-	$verblist = $verblist | select -uniq
-	$nounlist = $nounlist | select -uniq
+	$verblist = $verblist | select -unique
+	$nounlist = $nounlist | select -unique
 
 	if ( $verblist -contains $Command.Split('-')[0] ) {
 		Write-Verbose "Cmdlet verb is correct"
@@ -289,6 +322,12 @@ function fuck! {
 [CmdletBinding()]
 param()
 	Invoke-TheFuck -Force
+}
+
+function Get-Fucked {
+[CmdletBinding()]
+param()
+Import-Clixml ( Join-Path (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck) StaticDict.xml )
 }
 
 Export-ModuleMember *-*
