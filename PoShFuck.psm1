@@ -114,17 +114,11 @@ param
 
 	#Bunch of stand-alone IF blocks (not a switch) so it can hit multiple conditions and be corrected multiple times
 	
-    #cleanup the command
-	#if ($lastcommand -match "foo")
-    #{ 
-    #    $newcommand = $lastcommand -replace "foo", "bar"
-    #}
-	
 	## CHECK THE STATIC DICTIONARY - IF IT HITS RETURN IMMEDIATELY
-	$prevmatch = $staticdict.Get_Item($lastcommand)
+	$prevmatch = $staticdict.Get_Item($splitcmd)
 	if ( $prevmatch ) {
 		Write-Verbose "Returning dictionary result"
-		return $prevmatch
+		return $lastcommand -replace $splitcmd, $prevmatch
 	}
 	
 	if ( $preverror -match 'is not recognized as the name of a cmdlet, function' ) {
@@ -143,7 +137,7 @@ param
 		$newcommand = 'ipconfig | find "Address"'
 	}
 	
-	## RETURN AN ARRAY FOR THE USER ITERATE OVER
+	## TODO RETURN AN ARRAY FOR THE USER ITERATE OVER
     return $newcommand
 
 }
