@@ -1,6 +1,16 @@
-$dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck); md $dst -ea silentlycontinue; $pfk = "$env:temp\poshfuck.zip"
-Invoke-WebRequest 'https://github.com/mattparkes/PoShFuck/archive/master.zip' -OutFile $pfk
-$shell = New-Object -ComObject Shell.Application; $shell.Namespace($dst).copyhere(($shell.NameSpace($pfk)).items(),20); Remove-Item $pfk -Force
-Move-Item "$dst\PoShFuck-master\*" "$dst" -Force; Remove-Item "$dst\PoShFuck-master" -Recurse -Force
+$dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck);
+$pfk = "$env:temp\poshfuck.zip"
 
-Write-Output "Import-Module PoShFuck" | Out-File $profile -Append
+md $dst -ea silentlycontinue
+
+Invoke-WebRequest 'https://github.com/mattparkes/PoShFuck/archive/master.zip' -OutFile $pfk
+
+$shell = New-Object -ComObject Shell.Application; $shell.Namespace($dst).copyhere(($shell.NameSpace($pfk)).items(),20)
+
+Move-Item "$dst\PoShFuck-master\*" "$dst" -Force
+Remove-Item "$dst\PoShFuck-master" -Recurse -Force
+Remove-Item $pfk -Force
+
+if ( !(Select-String -Path $profile -Pattern "Import-Module PoShFuck") {
+	Write-Output "Import-Module PoShFuck" | Out-File $profile -Append
+}

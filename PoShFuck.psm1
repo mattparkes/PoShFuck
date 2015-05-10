@@ -58,7 +58,7 @@ param
 	
 	## CHOOSE WHETHER TO EXECUTE THE FIXED COMMAND
 	
-	if (!($Force)) {
+	if ( !$Force ) {
 		$title = "Did you mean?"
 		$message = " $newcommand"
 		$yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes",'Execute'
@@ -143,6 +143,7 @@ param
 			}
 	}
 	
+	## TODO SEPARATE COMMAND AND ARGUMENT FIXES
 	#Fix PING -a (-a param must be BEFORE the Host/IP or it is ignored, so move it before the Host/IP if it's not)
 	if ($newcommand -Match "^(ping)( .*)( -a)(.*)") {
 		$newcommand = $Matches[1].ToString() + $Matches[3].ToString() + $Matches[4].ToString() + $Matches[2].ToString()
