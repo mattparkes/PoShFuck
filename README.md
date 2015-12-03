@@ -15,8 +15,8 @@ For PoShFuck to run, your execution policy must be lowered. So run this in an ad
 We've all done this before...
 
 	PS C:\> peng 8.8.8.8 -a
-	peng : The term 'peng' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is
-	correct and try again.
+	peng : The term 'peng' is not recognized as the name of a cmdlet, function, script file, or operable program.
+	Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
 	At line:1 char:1
 	+ peng 8.8.8.8 -a
 	+ ~~~~
