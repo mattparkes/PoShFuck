@@ -1,5 +1,5 @@
 $dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck);
-$pfk = "$env:temp\poshfuck.zip"
+$pfk = (Join-Path $env:temp "poshfuck.zip")
 
 md $dst -ea silentlycontinue
 
