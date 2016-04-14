@@ -15,6 +15,7 @@ param
 	[switch]$Force
 )
 
+	$Force = !$Force
 	## GATHER THE LAST ERROR NOW BEFORE WE GENERATE MORE - IF WE DO, -EA IGNORE THE COMMAND OR REMOVE THEM ($global:error.Remove($global:error[0]))
 	$preverror = $global:Error[0]
 	
@@ -37,11 +38,11 @@ param
 		$aliasres = (get-alias $splitcmd -ea ignore).ResolvedCommand.Name
 		
 	} until (
-		( ($lastcommand.CommandLine -notmatch "Invoke-TheFuck") -and ($aliasres -notmatch "Invoke-TheFuck") -and ($lastcommand.CommandLine -notmatch "fuck!") ) -or ($lastcommand.id -eq 1)
+		( ($lastcommand.CommandLine -notmatch "Invoke-TheFuck") -and ($aliasres -notmatch "Invoke-TheFuck") -and ($lastcommand.CommandLine -notmatch "fuck?") ) -or ($lastcommand.id -eq 1)
 	)
 	
 	## THE LOOP STOPS AT THE FIRST COMMAND TO PREVENT AN INFINITE LOOP  - IF THAT -EQ FUCK THEN BREAK
-	if ( ($lastcommand.CommandLine -match "Invoke-TheFuck") -or ($aliasres -match "Invoke-TheFuck") -or ($lastcommand.CommandLine -match "fuck!") ) { throw "No valid commands found" }
+	if ( ($lastcommand.CommandLine -match "Invoke-TheFuck") -or ($aliasres -match "Invoke-TheFuck") -or ($lastcommand.CommandLine -match "fuck?") ) { throw "No valid commands found" }
 	
 	Write-Verbose "Fucking command: $lastcommand"
 	
@@ -99,7 +100,7 @@ Function Get-FuckingHelp {
 	}
 }
 
-function fuck! {
+function fuck? {
 [CmdletBinding()]
 param()
 	Invoke-TheFuck -Force
@@ -334,7 +335,7 @@ param
 }
 
 Export-ModuleMember *-*
-Export-ModuleMember fuck!
+Export-ModuleMember fuck?
 
 Set-Alias -Scope global -Name "Fuck" -Value "Invoke-TheFuck"
 Set-Alias -Scope global -Name "WTF" -Value "Get-FuckingHelp"
