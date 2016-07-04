@@ -12,6 +12,7 @@
 param
 (
 	[Parameter(Mandatory=$False, ValueFromPipeline=$False, ValueFromPipelineByPropertyName=$True)]
+	[Alias('fuck','true','yes','yeah','justfuckingdoit','imfeelinglucky')]
 	[switch]$Force
 )
 
