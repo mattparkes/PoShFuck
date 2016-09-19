@@ -46,7 +46,7 @@ param
 	Write-Verbose "Fucking command: $lastcommand"
 	
 	## GET THE STATIC DICTIONARY
-	$dictloc = ( Join-Path (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck) StaticDict.xml )
+	$dictloc = ( Join-Path (Split-Path (Get-Module -ListAvailable PoShFuck).Path) StaticDict.xml )
 	if ( Test-Path $dictloc ) {
 		Write-Verbose "Loading static dictionary"
 		$staticdict = Import-Clixml $dictloc
@@ -108,7 +108,7 @@ param()
 function Get-Fucked {
 [CmdletBinding()]
 param()
-	Import-Clixml ( Join-Path (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck) StaticDict.xml )
+	Import-Clixml ( Join-Path (Split-Path (Get-Module -ListAvailable PoShFuck).Path) StaticDict.xml )
 }
 
 ##############################################
