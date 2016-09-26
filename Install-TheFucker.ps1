@@ -15,7 +15,7 @@ if (-not(Test-Path $profile)) {
 	Write-Output "Import-Module PoShFuck" | Out-File $profile -Force -encoding utf8
 	Write-Output "Created $profile"
 } elseif ( -not(Select-String -Path $profile -Pattern "Import-Module PoShFuck")) {
-	Write-Output "Import-Module PoShFuck" | Out-File $profile -Append -encoding utf8
+	Write-Output "`nImport-Module PoShFuck" | Out-File $profile -Append -encoding utf8
 	Write-Output "Added PoShFuck to profile"
 }
 
