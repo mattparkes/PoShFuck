@@ -133,16 +133,32 @@ param
 	$prevmatch = $staticdict.Get_Item($splitcmd)
 	if ( $prevmatch ) {
 		Write-Verbose "Returning dictionary result"
-		return $lastcommand -replace $splitcmd, $prevmatch
+		$newcommand = $lastcommand -replace $splitcmd, $prevmatch
 	}
-	
+
 	if ( $preverror -match 'is not recognized as the name of a cmdlet, function' ) {
 		$icf = IsCommandFucked -Command $splitcmd
 			if ( $icf -ne $false ) { 
 				$newcommand = $newcommand -replace $splitcmd, $icf
 			}
 	}
-	
+
+	# Checking if the issue is with the parameter name
+	if ( $preverror -match 'A parameter cannot be found that matches parameter name' ) {
+		$fuckedParameter = ([regex]"'[^']*'").Matches($preverror)[0].Value
+		$fuckedParameter = $fuckedParameter.Replace("'","")
+		$CorrectedCommand = $newcommand.Split(' ')[0]
+		$ipf  = IsParameterFucked -Command $CorrectedCommand -Parameter $fuckedParameter
+		if ( $ipf -ne $false ) { 
+			$newcommand = $newcommand -replace $fuckedParameter, $ipf
+		}
+	}
+
+	if($prevmatch)
+	{
+		return $newcommand
+	}
+
 	## TODO SEPARATE COMMAND AND ARGUMENT FIXES
 	#Fix PING -a (-a param must be BEFORE the Host/IP or it is ignored, so move it before the Host/IP if it's not)
 	if ($newcommand -Match "^(ping)( .*)( -a)(.*)") {
@@ -182,6 +198,22 @@ param
 	}
 }
 
+function IsParameterFucked {
+	
+	[CmdletBinding()]
+	param
+	(
+		[string]$Command,
+		[string]$Parameter
+	)
+	$result = GetFuckingParameter	-Command  $Command -Parameter $Parameter 
+	if ($result -eq $Parameter) {
+		return $false
+	} else {
+		return [string]$result
+	}
+}
+	
 function GetFuckingCandidates {
 
 [CmdletBinding()]
@@ -332,6 +364,19 @@ param
 		return "$useverb-$($Command.Split('-')[1])"
 	}
 }
+
+function GetFuckingParameter {
+	##	TEST POWERSHELL CMDLETS
+	
+	[CmdletBinding()]
+	param
+	(
+		[string]$Parameter,
+		[string]$Command
+	)
+	$Parameters = (GET-Command $Command).parameters.Keys
+	return GetFuckingCandidates -Command $Command -Candidates $Parameters
+}	
 
 Export-ModuleMember *-*
 Export-ModuleMember fuck!
