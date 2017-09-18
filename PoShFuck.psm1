@@ -198,21 +198,6 @@ param
 	}
 }
 
-function IsParameterFucked {
-	
-	[CmdletBinding()]
-	param
-	(
-		[string]$Command,
-		[string]$Parameter
-	)
-	$result = GetFuckingParameter	-Command  $Command -Parameter $Parameter 
-	if ($result -eq $Parameter) {
-		return $false
-	} else {
-		return [string]$result
-	}
-}
 	
 function GetFuckingCandidates {
 
@@ -365,18 +350,22 @@ param
 	}
 }
 
-function GetFuckingParameter {
-	##	TEST POWERSHELL CMDLETS
+function IsParameterFucked {
 	
 	[CmdletBinding()]
 	param
 	(
-		[string]$Parameter,
-		[string]$Command
+		[string]$Command,
+		[string]$Parameter
 	)
 	$Parameters = (GET-Command $Command).parameters.Keys
-	return GetFuckingCandidates -Command $Command -Candidates $Parameters
-}	
+	$result = GetFuckingCandidates -Command $Command -Candidates $Parameters
+	if ($result -eq $Parameter) {
+		return $false
+	} else {
+		return [string]$result
+	}
+}
 
 Export-ModuleMember *-*
 Export-ModuleMember fuck!
