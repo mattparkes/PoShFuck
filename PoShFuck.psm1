@@ -198,7 +198,6 @@ param
 	}
 }
 
-	
 function GetFuckingCandidates {
 
 [CmdletBinding()]
