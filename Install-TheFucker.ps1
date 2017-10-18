@@ -11,7 +11,7 @@ Move-Item "$dst\PoShFuck-master\*" "$dst" -Force
 Remove-Item "$dst\PoShFuck-master" -Recurse -Force
 Remove-Item $pfk -Force
 
-if (-not(Test-Path $profile)) {
+if ($null -eq $profile -or (-not(Test-Path $profile))) {
 	Write-Output "Import-Module PoShFuck" | Out-File $profile -Force -encoding utf8
 	Write-Output "Created $profile"
 } elseif ( -not(Select-String -Path $profile -Pattern "Import-Module PoShFuck")) {
