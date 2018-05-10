@@ -359,7 +359,7 @@ function IsParameterFucked {
 		[string]$Parameter
 	)
 	$Parameters = (GET-Command $Command).parameters.Keys
-	$result = GetFuckingCandidates -Command $Command -Candidates $Parameters
+	$result = GetFuckingCandidates -Command $Parameter -Candidates $Parameters
 	if ($result -eq $Parameter) {
 		return $false
 	} else {
