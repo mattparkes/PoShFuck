@@ -3,7 +3,6 @@ $pfk = (Join-Path $env:temp "poshfuck.zip")
 
 md $dst -ea silentlycontinue
 
-[Net.ServicePointManager]::SecurityProtocol = "tls12"
 Invoke-WebRequest 'https://github.com/mattparkes/PoShFuck/archive/master.zip' -OutFile $pfk
 
 $shell = New-Object -ComObject Shell.Application; $shell.Namespace($dst).copyhere(($shell.NameSpace($pfk)).items(),20)
