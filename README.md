@@ -1,16 +1,16 @@
 # PoShFuck
 PowerShell implementation of "The Fuck" (https://github.com/nvbn/thefuck)
 
-When you type a command incorrectly, don't say 'fuck', type it!
+When you type a command incorrectly, don't _say_ 'fuck', _type_ it!
 
-#Installation
+## Installation:
 
 For PoShFuck to run, your execution policy must be lowered. So run this in an admin elevated PowerShell to install:
 
-	Set-ExecutionPolicy remoteSigned
+	Set-ExecutionPolicy RemoteSigned
 	iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/mattparkes/PoShFuck/master/Install-TheFucker.ps1'))
 
-#Usage
+## Usage:
 
 We've all done this before...
 
@@ -42,20 +42,16 @@ PoShFuck can fix it.
 	Approximate round trip times in milli-seconds:
 		Minimum = 14ms, Maximum = 15ms, Average = 14ms
 
-#Commands
+## Commands:
 
-- fuck (alias to Invoke-TheFuck)
-
+- `fuck` (alias to `Invoke-TheFuck`)  
 This is the command which mungs your last command and presents you with options to fix it.
 
-- fuck! (alias to Invoke-TheFuck -Force)
-
+- `fuck!` (alias to `Invoke-TheFuck -Force`)  
 This command will execute the recommended option without prompting the user.
 
-- WTF (alias to Get-FuckingHelp)
-
+- `WTF` (alias to `Get-FuckingHelp`)  
 Googles your last console error.
 
-- Get-Fucked
-
+- `Get-Fucked`  
 Prints the list of commands which you have used PoShFuck to correct previously.
