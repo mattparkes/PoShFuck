@@ -136,7 +136,7 @@ Function FuckFix {
 	}
 	
 	# Checking if the issue is with the parameter name
-	if ( (Get-Command $splitcmd).CommandType -eq 'Application' ) {
+	if ( (Get-Command $splitcmd -ea Ignore).CommandType -eq 'Application' ) {
 			$ipf  = IsExtParameterFucked -lastcommand $lastcommand -splitcmd $splitcmd
 			if ( $ipf -ne $false ) {
 				$newcommand = $ipf
