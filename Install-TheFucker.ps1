@@ -1,5 +1,5 @@
 try {
-	Test-Path $env:PSModulePath.Split(';')[0]
+	Test-Path $env:PSModulePath.Split(';')[0] | Out-Null
 	$dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck)
 } catch {
 	$dst = "$env:ProgramFiles\WindowsPowerShell\Modules\PoShFuck"
