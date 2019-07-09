@@ -1,6 +1,6 @@
-if ($env:PSModulePath) {
+try {
 	$dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck);
-} else {
+} catch {
 	$dst = "$env:ProgramFiles\WindowsPowerShell\Modules\PoShFuck"
 }
 $pfk = (Join-Path $env:temp "poshfuck.zip")
