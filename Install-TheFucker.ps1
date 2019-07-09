@@ -1,4 +1,8 @@
-$dst = "$env:ProgramFiles\WindowsPowerShell\Modules\PoShFuck"
+if ($env:PSModulePath) {
+	$dst = (Join-Path $env:PSModulePath.Split(';')[0] PoShFuck);
+} else {
+	$dst = "$env:ProgramFiles\WindowsPowerShell\Modules\PoShFuck"
+}
 $pfk = (Join-Path $env:temp "poshfuck.zip")
 
 md $dst -ea silentlycontinue

@@ -7,12 +7,8 @@
 	.EXAMPLE
 	Fuck
 #>
-
-[CmdletBinding()]
-param
-(
+[CmdletBinding()] param(
 	[Parameter(Mandatory=$False, ValueFromPipeline=$False, ValueFromPipelineByPropertyName=$True)]
-	[Alias('fuck','true','yes','yeah','justfuckingdoit','imfeelinglucky')]
 	[switch]$Force
 )
 
@@ -101,14 +97,12 @@ Function Get-FuckingHelp {
 }
 
 function fuck! {
-[CmdletBinding()]
-param()
+[CmdletBinding()] param()
 	Invoke-TheFuck -Force
 }
 
 function Get-Fucked {
-[CmdletBinding()]
-param()
+[CmdletBinding()] param()
 	Import-Clixml ( Join-Path (Split-Path (Get-Module -ListAvailable PoShFuck).Path) StaticDict.xml )
 }
 
@@ -117,49 +111,53 @@ param()
 ##############################################
 
 Function FuckFix {
-
-[CmdletBinding()]
-param
-(
+[CmdletBinding()] param(
 	[string]$lastcommand,
 	[string]$splitcmd,
 	[string]$preverror,
 	[hashtable]$staticdict
 )
 	$newcommand = $lastcommand
-
+	
 	#Bunch of stand-alone IF blocks (not a switch) so it can hit multiple conditions and be corrected multiple times
 	
 	## CHECK THE STATIC DICTIONARY - IF IT HITS RETURN IMMEDIATELY
 	$prevmatch = $staticdict.Get_Item($splitcmd)
 	if ( $prevmatch ) {
 		Write-Verbose "Returning dictionary result"
-		$newcommand = $lastcommand -replace $splitcmd, $prevmatch
+		return $lastcommand -replace $splitcmd, $prevmatch
 	}
-
+	
 	if ( $preverror -match 'is not recognized as the name of a cmdlet, function' ) {
 		$icf = IsCommandFucked -Command $splitcmd
 			if ( $icf -ne $false ) { 
 				$newcommand = $newcommand -replace $splitcmd, $icf
 			}
 	}
-
+	
 	# Checking if the issue is with the parameter name
-	if ( $preverror -match 'A parameter cannot be found that matches parameter name' ) {
-		$fuckedParameter = ([regex]"'[^']*'").Matches($preverror)[0].Value
-		$fuckedParameter = $fuckedParameter.Replace("'","")
-		$CorrectedCommand = $newcommand.Split(' ')[0]
-		$ipf  = IsParameterFucked -Command $CorrectedCommand -Parameter $fuckedParameter
-		if ( $ipf -ne $false ) { 
-			$newcommand = $newcommand -replace $fuckedParameter, $ipf
+	if ( (Get-Command $splitcmd).CommandType -eq 'Application' ) {
+			$ipf  = IsExtParameterFucked -lastcommand $lastcommand -splitcmd $splitcmd
+			if ( $ipf -ne $false ) {
+				$newcommand = $ipf
+			}
+	} else {
+		if ( $preverror -match 'A parameter cannot be found that matches parameter name' ) {
+			$fuckedParameter = ([regex]"'[^']*'").Matches($preverror)[0].Value
+			$fuckedParameter = $fuckedParameter.Replace("'","")
+			$CorrectedCommand = $newcommand.Split(' ')[0]
+			$ipf  = IsParameterFucked -Command $CorrectedCommand -Parameter $fuckedParameter
+			if ( $ipf -ne $false ) { 
+				$newcommand = $newcommand -replace $fuckedParameter, $ipf
+			}
 		}
 	}
-
+	
 	if($prevmatch)
 	{
 		return $newcommand
 	}
-
+	
 	## TODO SEPARATE COMMAND AND ARGUMENT FIXES
 	#Fix PING -a (-a param must be BEFORE the Host/IP or it is ignored, so move it before the Host/IP if it's not)
 	if ($newcommand -Match "^(ping)( .*)( -a)(.*)") {
@@ -171,16 +169,14 @@ param
 	}
 	
 	## TODO RETURN AN ARRAY FOR THE USER ITERATE OVER
-    return $newcommand
-
+	return $newcommand
+	
 }
 
 function IsCommandFucked {
 ## FIND WHETHER THE EXECUTABLE IS FUCKED
 
-[CmdletBinding()]
-param
-(
+[CmdletBinding()] param(
 	[string]$Command
 )
 
@@ -200,14 +196,10 @@ param
 }
 
 function GetFuckingCandidates {
-
-[CmdletBinding()]
-param
-(
+[CmdletBinding()] param(
 	[string]$Command,
 	[array]$Candidates
 )
-	
 	## ONLY INCLUDE CANDIDATES OF A SIMILAR SIZE
 	
 	$Candidates = $Candidates | Where-Object { ($_.Length -eq $Command.Length) -or ($_.Length -eq $Command.Length-1) -or ($_.Length -eq $Command.Length+1) }
@@ -299,9 +291,7 @@ param
 function CommandAnagramExtApp {
 ##	TEST EXTERNAL EXECUTABLES
 
-[CmdletBinding()]
-param
-(
+[CmdletBinding()] param(
 	[string]$Command
 )
 	$topcmd = 0
@@ -322,9 +312,7 @@ param
 function CommandAnagramCmdlet {
 ##	TEST POWERSHELL CMDLETS
 
-[CmdletBinding()]
-param
-(
+[CmdletBinding()] param(
 	[string]$Command
 )
 
@@ -350,14 +338,12 @@ param
 	}
 }
 
-function IsParameterFucked {
-	
-	[CmdletBinding()]
-	param
-	(
+function IsParameterFucked {	
+[CmdletBinding()] param(
 		[string]$Command,
 		[string]$Parameter
 	)
+	
 	$Parameters = (GET-Command $Command).parameters.Keys
 	$result = GetFuckingCandidates -Command $Command -Candidates $Parameters
 	if ($result -eq $Parameter) {
@@ -365,6 +351,31 @@ function IsParameterFucked {
 	} else {
 		return [string]$result
 	}
+}
+
+Function Fixgit {
+[CmdletBinding()] param(
+	[string]$lastcommand
+)
+	Write-Verbose "Git command to fix: $lastcommand"
+	Invoke-Expression "$lastcommand 2>&1" -ErrorVariable gitres | Out-Null
+	$origcmd = ([string]$gitres[0]).split('')[1].Replace("'",'')
+	$correctedcmd = ([string]($gitres[1])).split('')[7]
+	
+	return $lastcommand -replace $origcmd,$correctedcmd
+}
+
+Function IsExtParameterFucked {
+[CmdletBinding()] param(
+	[string]$lastcommand,
+	[string]$splitcmd
+)
+
+	switch ($splitcmd) {
+	'git'		{ return Fixgit -lastcommand $lastcommand }
+	}
+	
+	return $false
 }
 
 Export-ModuleMember *-*
