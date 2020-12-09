@@ -128,7 +128,7 @@ Function FuckFix {
 		return $lastcommand -replace $splitcmd, $prevmatch
 	}
 	
-	if ( $preverror -match 'is not recognized as the name of a cmdlet, function' ) {
+	if ( $preverror -match 'is not recognized as a name of a cmdlet, function' ) {
 		$icf = IsCommandFucked -Command $splitcmd
 			if ( $icf -ne $false ) { 
 				$newcommand = $newcommand -replace $splitcmd, $icf
