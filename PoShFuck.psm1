@@ -360,13 +360,11 @@ Function Fixgit {
 	Write-Verbose "Git command to fix: $lastcommand"
 	Invoke-Expression "$lastcommand 2>&1" -ErrorVariable gitres | Out-Null
 	if ($gitres[0] -notmatch "^git: '(\w+)'") {
-		Write-Warning "Unable to parse the original git command from the error output!"
-		return $false
+		Throw "Unable to parse the original git command from the error output!"
 	}
 	$origcmd = $Matches[1]
 	if ($gitres[3] -notmatch "^\s+(\w+)") {
-		Write-Warning "Git either provided no suggested alternatives, or the output was in a bad format!"
-		return $false
+		Throw "Git either provided no suggested alternatives, or the output was in a bad format!"
 	}
 	$correctedcmd = $Matches[1]
 	
