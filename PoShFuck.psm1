@@ -359,8 +359,16 @@ Function Fixgit {
 )
 	Write-Verbose "Git command to fix: $lastcommand"
 	Invoke-Expression "$lastcommand 2>&1" -ErrorVariable gitres | Out-Null
-	$origcmd = ([string]$gitres[0]).split('')[1].Replace("'",'')
-	$correctedcmd = ([string]($gitres[1])).split('')[7]
+	if ($gitres[0] -notmatch "^git: '(\w+)'") {
+		Write-Warning "Unable to parse the original git command from the error output!"
+		return $false
+	}
+	$origcmd = $Matches[1]
+	if ($gitres[3] -notmatch "^\s+(\w+)") {
+		Write-Warning "Git either provided no suggested alternatives, or the output was in a bad format!"
+		return $false
+	}
+	$correctedcmd = $Matches[1]
 	
 	return $lastcommand -replace $origcmd,$correctedcmd
 }
