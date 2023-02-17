@@ -90,7 +90,7 @@ Function Get-FuckingHelp {
 #>
 	try {
 		$preverr = ($global:Error[0].ToString() -split [regex]::Escape([environment]::newline))
-		Start-Process "http://www.google.com/search?q=PowerShell $preverr"
+		Start-Process "https://neeva.com/search?q=PowerShell $preverr"
 	} catch {
 		throw "WTF are you doing? Cannot Get-FuckingHelp without a previous error."
 	}
